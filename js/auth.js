@@ -117,9 +117,9 @@ async function signInWithGoogle() {
 
             // Redirect based on role
             if (userData.role === "student") {
-                window.location.href = "/student-dashboard.html";
+                window.location.href = "../student-dashboard.html";
             } else if (userData.role === "teacher") {
-                window.location.href = "/teacher-dashboard.html";
+                window.location.href = "../teacher-dashboard.html";
             } else {
                 alert("Role not assigned! Contact admin.");
             }
@@ -137,11 +137,58 @@ async function signOut() {
   try {
     await auth.signOut();
     console.log("User signed out successfully");
+    
+    // Explicitly reset UI state
+    authButtons.style.display = 'flex';
+    logoutContainer.style.display = 'none';
+    userProfileNav.style.display = 'none';
+    homePage.style.display = 'block';
+    studentDashboard.style.display = 'none';
+    teacherDashboard.style.display = 'none';
+    
+    // Reset profile elements
+    profilePicture.src = 'assets/default-avatar.png';
+    userName.textContent = 'User';
+    
+    // Clear any stored session data
+    sessionStorage.removeItem('currentUser');
+    localStorage.removeItem('userRole');
+    
+    // Redirect to home page if needed
+    if (window.location.pathname !== '/' && window.location.pathname !== '/index.html') {
+      window.location.href = '/';
+    }
   } catch (error) {
     console.error("Sign out error:", error);
+    alert("Error signing out: " + error.message);
     throw error;
   }
 }
+
+// Ensure the logout button has the correct event listener
+document.addEventListener('DOMContentLoaded', () => {
+  // Existing event listeners...
+  
+  // Make sure logout button has the correct handler
+  if (logoutButton) {
+    // Remove any existing event listeners to prevent duplicates
+    logoutButton.replaceWith(logoutButton.cloneNode(true));
+    
+    // Get fresh reference and add listener
+    const refreshedLogoutButton = document.getElementById('logout-button');
+    refreshedLogoutButton.addEventListener('click', () => {
+      signOut()
+        .then(() => {
+          console.log("Logout complete and UI updated");
+        })
+        .catch(err => {
+          console.error("Logout error:", err);
+        });
+    });
+  }
+  
+  // Other existing event listeners...
+});
 
 // Update UI based on authentication state
 function updateUI(user) {
